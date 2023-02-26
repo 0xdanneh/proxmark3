@@ -589,6 +589,7 @@ static int CmdLFHitagReader(const char *Cmd) {
         memcpy(htd.crypto.key, key, sizeof(htd.crypto.key));
     }
     if (h21) {
+        // all pages
         htf = RHT2F_PASSWORD;
         memcpy(htd.pwd.password, key, sizeof(htd.pwd.password));
     }
@@ -604,6 +605,7 @@ static int CmdLFHitagReader(const char *Cmd) {
         htf = RHT2F_TEST_AUTH_ATTEMPTS;
     }
     if (h26) {
+        // uuid
         htf = RHT2F_UID_ONLY;
     }
 
