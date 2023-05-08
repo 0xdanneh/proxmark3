@@ -621,15 +621,11 @@ static bool hitag2_write_page(uint8_t *rx, const size_t rxlen, uint8_t *tx, size
             if ((rxlen == 10)
                     && (rx[0] == (0x82 | (blocknr << 3) | ((blocknr ^ 7) >> 2)))
                     && (rx[1] == (((blocknr & 0x3) ^ 0x3) << 6))) {
-                Dbprintf("hitag2_write_page: Page number was received correctly: rxlen %d rx %02x%02x%02x%02x",
-                         rxlen, rx[0], rx[1], rx[2], rx[3]);
                 *txlen = 32;
                 memset(tx, 0, HITAG_FRAME_LEN);
                 memcpy(tx, writedata, 4);
                 writestate = WRITE_STATE_PROG;
             } else {
-                Dbprintf("hitag2_write_page: Page number was not received correctly: rxlen %d rx %02x%02x%02x%02x",
-                         rxlen, rx[0], rx[1], rx[2], rx[3]);
                 bSuccessful = false;
                 return false;
             }
@@ -663,7 +659,6 @@ static bool hitag2_password(uint8_t *rx, const size_t rxlen, uint8_t *tx, size_t
             return false;
         }
     } else {
-        DbpString("hitag2_password not writing");
 
         // Try to find out which command was send by selecting on length (in bits)
         switch (rxlen) {
@@ -683,7 +678,6 @@ static bool hitag2_password(uint8_t *rx, const size_t rxlen, uint8_t *tx, size_t
             case 32: {
                 // stage 1, got UID
                 if (bPwd == false) {
-                    Dbprintf("Unknown frame length: %d", rxlen);
                     bPwd = true;
                     bAuthenticating = true;
                     memcpy(tx, password, 4);
@@ -701,23 +695,18 @@ static bool hitag2_password(uint8_t *rx, const size_t rxlen, uint8_t *tx, size_t
                     }
                     // stage 2+, got data block
                     else {
-                        Dbprintf("Stage 2+ got: %d", blocknr);
                         memcpy(tag.sectors[blocknr], rx, 4);
                         blocknr++;
                     }
 
                     if (blocknr > 7) {
-                        DbpString("blocknr > 7");
                         bSuccessful = true;
                         return false;
-                    } else {
-                        DbpString("blocknr <= 7");
                     }
 
                     *txlen = 10;
                     tx[0] = 0xC0 | (blocknr << 3) | ((blocknr ^ 7) >> 2);
                     tx[1] = ((blocknr ^ 7) << 6);
-                    Dbprintf("Set transmission: %02x%02x", tx[0], tx[1]);
                 }
             }
             break;
@@ -1728,7 +1717,6 @@ void ReaderHitag(hitag_function htf, hitag_data *htd, bool ledcontrol) {
                 break;
             }
             case RHT2F_PASSWORD: {
-                DBG DbpString("Running hitag2_password");
                 bStop = !hitag2_password(rx, rxlen, tx, &txlen, false);
                 break;
             }
@@ -2091,7 +2079,6 @@ void WriterHitag(hitag_function htf, hitag_data *htd, int page, bool ledcontrol)
             lf_wait_periods(HITAG_T_WAIT_POWERUP + HITAG_T_WAIT_START_AUTH_MAX / 4);
             command_start += HITAG_T_WAIT_POWERUP + HITAG_T_WAIT_START_AUTH_MAX / 4;
         } else {
-            DbpString("Waiting for t_wait_2 carrier periods");
             // Wait for t_wait_2 carrier periods after the last tag bit before transmitting,
             lf_wait_periods(t_wait_2);
             command_start += t_wait_2;
